@@ -6,13 +6,13 @@ LEVEL
 
 	# Layout section
 	LAYOUT
-		Rock,  Rock,  Rock,  Rock,  Rock, Water, Water, Rock
-		Rock,  Grass, Water, Water, Rock, Water, Water, Rock
-		Rock,  Water, Water, Water, Rock, Water, Water, Rock
-		Rock,  Grass, Grass, Grass, Rock, Water, Water, Rock
-		Rock,  Rock,  Rock,  Rock,  Rock, Water, Water, Rock
-		Rock,  Water, Water, Water, Rock, Water, Water, Rock
-		Rock,  Grass, Grass, Grass, Rock, Water, Water, Rock
-		Rock,  Rock,  Rock,  Rock,  Rock, Water, Water, Rock
+		Rock,  Rock,				Rock,				Rock,  Rock, Water, Water, Rock
+		Rock,  Grass,				Water&Type=Still,	Water, Rock, Water, Water, Rock,  Rock
+		Rock,  Water&Type=Still,	Water&Type=Still,	Water, Rock, Water, Water, Water, Rock
+		Rock,  Grass,				Grass|Column,		Grass, Rock, Water, Water, Water, Rock
+		Rock,  Rock,				Rock,				Rock,  Rock, Water, Water, Water, Rock
+		Rock,  Water|Column,		Water,				Water, Rock, Water, Water, Water, Rock
+		Rock,  Grass,				Grass,				Grass, Rock, Water, Water, Rock,  Rock
+		Rock,  Rock,				,					Rock,  Rock, Water, Water, Rock
 	END LAYOUT
 END LEVEL

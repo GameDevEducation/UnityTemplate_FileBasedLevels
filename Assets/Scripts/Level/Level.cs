@@ -7,7 +7,7 @@ public class Level
     public int Version { get; set; }
     public string FilePath { get; set; }
 
-    List<List<BaseTileBehaviour>> Tiles = new List<List<BaseTileBehaviour>>();
+    List<List<GridTile>> Tiles = new List<List<GridTile>>();
 
     public Level(string _FilePath)
     {
@@ -23,7 +23,7 @@ public class Level
 
     public void AddRow()
     {
-        Tiles.Add(new List<BaseTileBehaviour>());
+        Tiles.Add(new List<GridTile>());
     }
 
     public void EndRow()
@@ -31,16 +31,33 @@ public class Level
         CurrentInsertionPoint = new Vector2Int(0, CurrentInsertionPoint.y + 1);
     }
 
-    public void AddTile(BaseTileBehaviour template)
+    public void BeginTile()
+    {
+        Tiles[CurrentInsertionPoint.y].Add(new GridTile());
+    }
+
+    public void EndTile()
+    {
+        CurrentInsertionPoint.x += 1;
+    }
+
+    public BaseTileBehaviour AddBehaviourToCurrentTile(BaseTileBehaviour template, Dictionary<string, string> parameters)
     {
         // instantiate the new tile and add to the level
-        var newTile = ScriptableObject.Instantiate(template);
-        Tiles[CurrentInsertionPoint.y].Add(newTile);
+        var newBehaviour = ScriptableObject.Instantiate(template);
+        Tiles[CurrentInsertionPoint.y][CurrentInsertionPoint.x].AddBehaviour(newBehaviour);
 
         // set the location
-        newTile.Bind(CurrentInsertionPoint);
+        newBehaviour.Bind(CurrentInsertionPoint, parameters);
 
-        CurrentInsertionPoint.x += 1;
+        return newBehaviour;
+    }
+
+    public void AddEmptyTile()
+    {
+        Tiles[CurrentInsertionPoint.y].Add(null);
+
+        EndTile();
     }
 
     public void PerformInstantiation(Transform levelRoot, float tileSize)
@@ -56,12 +73,17 @@ public class Level
             var rowTiles = Tiles[rowIndex];
             for (int tileIndex = 0; tileIndex < rowTiles.Count; ++tileIndex)
             {
+                var tile = rowTiles[tileIndex];
+
+                if (tile == null)
+                    continue;
+
                 // create the tile game object
                 var tileGO = new GameObject($"Tile_{(rowIndex + 1)},{(tileIndex + 1)}");
                 tileGO.transform.SetParent(rowGO.transform);
                 tileGO.transform.localPosition = new Vector3(tileIndex * tileSize, 0f, 0f);
 
-                rowTiles[tileIndex].InstantiateBehaviour(tileGO);
+                tile.InstantiateBehaviours(tileGO);
             }
         }
     }
@@ -71,7 +93,12 @@ public class Level
         foreach(var rowTiles in Tiles)
         {
             foreach (var tile in rowTiles)
+            {
+                if (tile == null)
+                    continue;
+
                 tile.Tick();
+            }
         }
     }
 }

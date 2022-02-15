@@ -51,6 +51,9 @@ public class LevelParser : MonoBehaviour
 
     const char Keyword_Comment = '#';
     const char Keyword_ColumnDelimiter = ',';
+    const char Keyword_ElementDelimeter = '|';
+    const char Keyword_ParameterDelimiter = '&';
+    const char Keyword_KeyValueAssignment = '=';
     const string Keyword_MetadataStart = "METADATA";
     const string Keyword_MetadataEnd = "END METADATA";
     const string Keyword_LayoutStart = "LAYOUT";
@@ -147,19 +150,63 @@ public class LevelParser : MonoBehaviour
 
         // process each entry
         var rowElements = line.Split(Keyword_ColumnDelimiter);
-        foreach(var rawElement in rowElements)
+        foreach(var rawTileString in rowElements)
         {
-            var element = rawElement.Trim();
+            var trimmedTileString = rawTileString.Trim();
 
-            if (string.IsNullOrEmpty(element))
-                throw new System.Exception($"Empty element on line {line}");
+            if (string.IsNullOrEmpty(trimmedTileString))
+            {
+                level.AddEmptyTile();
+                continue;
+            }
 
-            if (!TileRegistry.ContainsKey(element))
-                throw new System.Exception($"Unknown tile {element} found");
+            level.BeginTile();
 
-            level.AddTile(TileRegistry[element]);
+            // split up and parse each element
+            var elementList = trimmedTileString.Split(Keyword_ElementDelimeter);
+            foreach(var rawElement in elementList)
+            {
+                var element = rawElement.Trim();
+
+                var elementComponents = element.Split(Keyword_ParameterDelimiter);
+                var elementType = elementComponents[0].Trim();
+
+                if (!TileRegistry.ContainsKey(elementType))
+                    throw new System.Exception($"Unknown tile {elementType} found");
+
+                Dictionary<string, string> parameters = ParseParameters(elementComponents);
+
+                level.AddBehaviourToCurrentTile(TileRegistry[elementType], parameters);
+            }
+
+            level.EndTile();
         }
 
         level.EndRow();
+    }
+
+    Dictionary<string, string> ParseParameters(string[] elementComponents)
+    {
+        // do we have parameters?
+        Dictionary<string, string> parameters = null;
+        if (elementComponents.Length > 1)
+        {
+            parameters = new Dictionary<string, string>();
+
+            // extract the parameters
+            for (int paramIndex = 1; paramIndex < elementComponents.Length; paramIndex++)
+            {
+                var parameter = elementComponents[paramIndex];
+                var parameterComponents = parameter.Split(Keyword_KeyValueAssignment);
+
+                if (parameterComponents.Length != 2)
+                    throw new System.Exception($"Invalid parameter {parameter}");
+
+                // store the parameters
+                parameters[parameterComponents[0].Trim()] = parameterComponents[1].Trim();
+            }
+        }
+
+        return parameters;
     }
 }

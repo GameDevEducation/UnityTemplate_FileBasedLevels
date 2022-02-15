@@ -14,9 +14,17 @@ public abstract class BaseTileBehaviour : ScriptableObject
     public GameObject Prefab => _Prefab;
     public Vector2Int Location { get; protected set; }
 
-    public void Bind(Vector2Int _Location)
+    public void Bind(Vector2Int _Location, Dictionary<string, string> parameters)
     {
         Location = _Location;
+
+        if (parameters != null)
+            ParseParameters(parameters);
+    }
+
+    public virtual void ParseParameters(Dictionary<string, string> parameters)
+    {
+
     }
 
     public virtual void InstantiateBehaviour(GameObject tileGO)
